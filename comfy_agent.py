@@ -15,7 +15,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Response
 
 # 全局变量：保存固定种子值（初始为None）
 FIXED_SEED = None  # 种子固定模式下，复用此值
-JUPYTER_URL = "https://a*****"  #在autodl中jupyter的链接地址前面是a
+JUPYTER_URL =  "https://a*****"  #在autodl中jupyter的链接地址前面是a
 
 # ====================== 1. 核心配置（你需要修改的部分） ======================
 class Config:
@@ -33,9 +33,10 @@ class Config:
     COMFYUI_HISTORY_URL = f"{COMFYUI_API_URL}/history"
     
     # 工作流文件路径（替换为你的本地工作流JSON路径）
+    # 我在新版本中将工作流放在了同目录下的专属文件夹中
     WORKFLOW_PATHS = {
-        "z_image": r"D:\浏览器下载\Z-Image_双重采样工作流.json",               # Z-Image双重采样工作流
-        "qwen_edit": r"D:\浏览器下载\Qwen-Imag-Eedit-2511图像编辑.json"       # Qwen图像编辑工作流
+        "z_image": r".\workflows\Z-Image_双重采样工作流.json",               # Z-Image双重采样工作流
+        "qwen_edit": r".\workflows\Qwen-Imag-Eedit-2511图像编辑.json"       # Qwen图像编辑工作流
     }
     
     # Z-Image模型路径映射（12种组合，替换为你的实际模型路径）
@@ -420,7 +421,7 @@ def agent_handle(command: str, image_file: Optional[UploadFile] = None) -> dict:
         # 你的云端 Jupyter Lab 前缀地址
         CLOUD_FILES_URL = f"{JUPYTER_URL}jupyter/files/ComfyUI/output"
         # ⚠️ 将你抓到的完整 _xsrf 值写在这里（若之后失效不显示图片了，替换这里的字符串即可）
-        XSRF_TOKEN = "*******"
+        XSRF_TOKEN = "*****"
 
         # 动态拼接最终提取链接
         if img_dir_url:
