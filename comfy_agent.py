@@ -15,6 +15,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Response
 
 # 全局变量：保存固定种子值（初始为None）
 FIXED_SEED = None  # 种子固定模式下，复用此值
+COMFYUI_API_URL = "https://*****"  # 替换为你的ComfyUI公网地址
 
 # ====================== 1. 核心配置（你需要修改的部分） ======================
 class Config:
@@ -26,14 +27,12 @@ class Config:
     OLLAMA_MODEL = "llava:7b"
     
     # 远程ComfyUI配置（公网地址）
-    COMFYUI_API_URL = "https://u868422-7726102a77c1.westd.seetacloud.com:8443/"  # 替换为你的ComfyUI公网地址
     COMFYUI_UPLOAD_URL = f"{COMFYUI_API_URL}ComfyUI/input"
     COMFYUI_PROMPT_URL = f"{COMFYUI_API_URL}/prompt"
     COMFYUI_HISTORY_URL = f"{COMFYUI_API_URL}/history"
     
     # 工作流文件路径（替换为你的本地工作流JSON路径）
     WORKFLOW_PATHS = {
-        "flux2": r"D:\浏览器下载\Flux2+Klein+超强多功能工作流.json",          # Flux2生成工作流
         "z_image": r"D:\浏览器下载\Z-Image_双重采样工作流.json",               # Z-Image双重采样工作流
         "qwen_edit": r"D:\浏览器下载\Qwen-Imag-Eedit-2511图像编辑.json"       # Qwen图像编辑工作流
     }
@@ -418,9 +417,9 @@ def agent_handle(command: str, image_file: Optional[UploadFile] = None) -> dict:
         img_name = os.path.basename(img_path)
         
         # 你的云端 Jupyter Lab 前缀地址
-        CLOUD_FILES_URL = "https://a868422-7726102a77c1.westd.seetacloud.com:8443/jupyter/files/ComfyUI/output"
+        CLOUD_FILES_URL = f"{COMFYUI_API_URL}jupyter/files/ComfyUI/output"
         # ⚠️ 将你抓到的完整 _xsrf 值写在这里（若之后失效不显示图片了，替换这里的字符串即可）
-        XSRF_TOKEN = "2%7C41de04b1%7Cf9382e857a0bb5d300838069e64c0618%7C1772698149"
+        XSRF_TOKEN = "*******"
 
         # 动态拼接最终提取链接
         if img_dir_url:
@@ -430,10 +429,10 @@ def agent_handle(command: str, image_file: Optional[UploadFile] = None) -> dict:
 
         # 2. 优化：不再直接向前端丢原链接，而是将目标路径做 URL 编码并导向我们的代理路由
         # 注意此处的 8000 端口需要和你的后端的端口保持一致
-        preview_url = f"http://192.168.29.206:8000/proxy-image?url={quote(target_url)}"
+        preview_url = f"http://192.168.*.*:8000/proxy-image?url={quote(target_url)}"
 
          # 提供一个供日常点击跳转查看的常规云端目录地址
-        CLOUD_TREE_URL = "https://a868422-7726102a77c1.westd.seetacloud.com:8443/jupyter/lab/tree/ComfyUI/output"
+        CLOUD_TREE_URL = f"{COMFYUI_API_URL}jupyter/lab/tree/ComfyUI/output"
         real_url = f"{CLOUD_TREE_URL}/{img_dir_url}/{img_name}" if img_dir_url else f"{CLOUD_TREE_URL}/{img_name}"
 
         # 返回结果（种子信息提示）
@@ -485,9 +484,9 @@ async def proxy_image(url: str):
     
     # 将此 headers 里的字符串替换为你能在浏览器正常预览时抓包得到的实际有效 Cookie
     headers = {
-        "Cookie": 'username-localhost-8888="2|1:0|10:1772698149|23:username-localhost-8888|200:eyJ1c2VybmFtZSI6ICIzM2FiZmExYjM2YzI0YWZiODFjZGIzMGM5ZjQ1YzU5MyIsICJuYW1lIjogIkFub255bW91cyBFdWtlbGFkZSIsICJkaXNwbGF5X25hbWUiOiAiQW5vbnltb3VzIEV1a2VsYWRlIiwgImluaXRpYWxzIjogIkFFIiwgImNvbG9yIjogbnVsbH0=|d8fb59345379600b8246088373b5b1bf9916f307038d516bf4fc636ddb733c75"; _xsrf=2|41de04b1|f9382e857a0bb5d300838069e64c0618|1772698149', 
+        "Cookie": '*****', 
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Referer": "https://a868422-7726102a77c1.westd.seetacloud.com:8443/"
+        "Referer": f"{COMFYUI_API_URL}"
     }
     
     try:

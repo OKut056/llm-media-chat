@@ -334,7 +334,7 @@
     <script>
         // 配置后端接口地址
         // 优化代码：不再把内网 IP 完全写死，改为动态获取当前宿主机域名以防止环境切换后连接失效
-        const DEFAULT_IP = "192.168.29.206";
+        const DEFAULT_IP = "192.168.*.*";
         const currentHost = window.location.hostname || DEFAULT_IP;
         // 配置后端接口地址
         const API_BASE_URL = `http://${currentHost}:8000`;
