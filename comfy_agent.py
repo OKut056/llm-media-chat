@@ -15,7 +15,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Response
 
 # 全局变量：保存固定种子值（初始为None）
 FIXED_SEED = None  # 种子固定模式下，复用此值
-COMFYUI_API_URL = "https://*****"  # 替换为你的ComfyUI公网地址
+JUPYTER_URL = "https://a*****"  #在autodl中jupyter的链接地址前面是a
 
 # ====================== 1. 核心配置（你需要修改的部分） ======================
 class Config:
@@ -27,6 +27,7 @@ class Config:
     OLLAMA_MODEL = "llava:7b"
     
     # 远程ComfyUI配置（公网地址）
+    COMFYUI_API_URL = "https://u*****"  # 替换为你的ComfyUI公网地址，在autodl中comfyui的链接地址前面是u
     COMFYUI_UPLOAD_URL = f"{COMFYUI_API_URL}ComfyUI/input"
     COMFYUI_PROMPT_URL = f"{COMFYUI_API_URL}/prompt"
     COMFYUI_HISTORY_URL = f"{COMFYUI_API_URL}/history"
@@ -417,7 +418,7 @@ def agent_handle(command: str, image_file: Optional[UploadFile] = None) -> dict:
         img_name = os.path.basename(img_path)
         
         # 你的云端 Jupyter Lab 前缀地址
-        CLOUD_FILES_URL = f"{COMFYUI_API_URL}jupyter/files/ComfyUI/output"
+        CLOUD_FILES_URL = f"{JUPYTER_URL}jupyter/files/ComfyUI/output"
         # ⚠️ 将你抓到的完整 _xsrf 值写在这里（若之后失效不显示图片了，替换这里的字符串即可）
         XSRF_TOKEN = "*******"
 
@@ -432,7 +433,7 @@ def agent_handle(command: str, image_file: Optional[UploadFile] = None) -> dict:
         preview_url = f"http://192.168.*.*:8000/proxy-image?url={quote(target_url)}"
 
          # 提供一个供日常点击跳转查看的常规云端目录地址
-        CLOUD_TREE_URL = f"{COMFYUI_API_URL}jupyter/lab/tree/ComfyUI/output"
+        CLOUD_TREE_URL = f"{JUPYTER_URL}jupyter/lab/tree/ComfyUI/output"
         real_url = f"{CLOUD_TREE_URL}/{img_dir_url}/{img_name}" if img_dir_url else f"{CLOUD_TREE_URL}/{img_name}"
 
         # 返回结果（种子信息提示）
@@ -486,7 +487,7 @@ async def proxy_image(url: str):
     headers = {
         "Cookie": '*****', 
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Referer": f"{COMFYUI_API_URL}"
+        "Referer": f"{JUPYTER_URL}"
     }
     
     try:
