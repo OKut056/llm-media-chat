@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Agent Chat</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --sidebar-bg: #f0f4f9;
+            --chat-bg: #ffffff;
+            --user-msg-bg: #e3e3e3;
+            --bot-msg-bg: #f8fcfd;
+            --primary-color: #1a73e8;
+            --text-color: #1f1f1f;
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        /* 侧边栏样式 */
+        #sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .control-group input[type="checkbox"] {
+            margin-right: 10px;
+            width: 16px;
+            height: 16px;
+        }
+
+        /* 主对话区域样式 */
+        #main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background-color: var(--chat-bg);
+        }
+
+        .header-bar {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            margin-right: 15px;
+        }
+
+        #chat-window {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .message img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .user-msg {
+            align-self: flex-end;
+            background-color: var(--user-msg-bg);
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-msg {
+            align-self: flex-start;
+            background-color: var(--bot-msg-bg);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* 输入区样式 */
+        #input-container {
+            padding: 20px;
+            background-color: var(--chat-bg);
+            border-top: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .input-box {
+            display: flex;
+            align-items: flex-end;
+            background-color: var(--sidebar-bg);
+            border-radius: 24px;
+            padding: 10px 15px;
+            position: relative;
+        }
+
+        #image-preview-container {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 20px;
+            margin-bottom: 10px;
+            background: var(--bg-color);
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        #image-preview-container img {
+            height: 80px;
+            border-radius: 4px;
+        }
+
+        #remove-img-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4d4f;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 20px;
+            text-align: center;
+        }
+
+        textarea {
+            flex: 1;
+            border: none;
+            background: transparent;
+            resize: none;
+            outline: none;
+            padding: 8px;
+            font-size: 1rem;
+            max-height: 150px;
+            min-height: 24px;
+            overflow-y: auto;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: background 0.2s;
+        }
+
+        .action-btn:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .action-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .send-btn {
+            color: var(--primary-color);
+        }
+
+        .send-btn.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            #sidebar {
+                position: absolute;
+                left: -280px;
+                height: 100%;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+            #sidebar.open {
+                transform: translateX(280px);
+            }
+            .menu-btn {
+                display: block;
+            }
+        }
+
+        /* 加载动画 */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 5px;
+        }
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background: #90949c;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 左侧面板 -->
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            模型设置
+        </div>
+        <div class="sidebar-content">
+            <div class="control-group">
+                <label><input type="checkbox" id="chk-use-turbo" checked> 启用 Turbo 加速</label>
+            </div>
+            <div class="control-group">
+                <label><input type="checkbox" id="chk-high-res"> 启用高分辨率</label>
+            </div>
+            <div class="control-group">
+                <label><input type="checkbox" id="chk-auto-send"> 自动发送图片</label>
+            </div>
+            <!-- 可根据后端功能添加更多复选框选项 -->
+        </div>
+    </aside>
+
+    <!-- 右侧聊天面板 -->
+    <main id="main-content">
+        <div class="header-bar">
+            <button class="menu-btn" id="menu-toggle">☰</button>
+            <span>Agent 助理</span>
+        </div>
+
+        <div id="chat-window">
+            <div class="message bot-msg">
+                你好！我是你的智能助理。你可以直接和我聊天，也可以发送指令并附带图片让我进行视觉分析或远程生图。
+            </div>
+        </div>
+
+        <div id="input-container">
+            <!-- 图片预览 -->
+            <div id="image-preview-container">
+                <button id="remove-img-btn">×</button>
+                <img id="image-preview" src="" alt="预览">
+            </div>
+
+            <div class="input-box">
+                <!-- 隐藏的图片上传控件 -->
+                <input type="file" id="file-input" accept="image/*" style="display: none;">
+                
+                <button class="action-btn" id="upload-btn" title="上传图片">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 13H5l3-4.14 1.5 1.87L13 10.59 18 16h-8z"/>
+                    </svg>
+                </button>
+
+                <textarea id="message-input" rows="1" placeholder="输入消息或生成指令..."></textarea>
+
+                <button class="action-btn send-btn disabled" id="send-btn" title="发送">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 配置后端接口地址
+        // 优化代码：不再把内网 IP 完全写死，改为动态获取当前宿主机域名以防止环境切换后连接失效
+        const DEFAULT_IP = "192.168.29.206";
+        const currentHost = window.location.hostname || DEFAULT_IP;
+        // 配置后端接口地址
+        const API_BASE_URL = `http://${currentHost}:8000`;
+
+        // DOM 元素获取
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const chatWindow = document.getElementById('chat-window');
+        const messageInput = document.getElementById('message-input');
+        const fileInput = document.getElementById('file-input');
+        const uploadBtn = document.getElementById('upload-btn');
+        const sendBtn = document.getElementById('send-btn');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const removeImgBtn = document.getElementById('remove-img-btn');
+
+        let selectedFile = null;
+
+        // 移动端侧边栏切换
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        // 自动调整输入框高度并控制发送按钮状态
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            checkSendReady();
+        });
+
+        // 检查是否可以发送（只要有文本或有图片就激活发送按钮）
+        function checkSendReady() {
+            if (messageInput.value.trim() !== '' || selectedFile) {
+                sendBtn.classList.remove('disabled');
+            } else {
+                sendBtn.classList.add('disabled');
+            }
+        }
+
+        // 触发文件选择
+        uploadBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // 文件选择后的处理（预览）
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                selectedFile = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreviewContainer.style.display = 'block';
+                    checkSendReady();
+                }
+                reader.readAsDataURL(selectedFile);
+            }
+        });
+
+        // 移除图片
+        removeImgBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            imagePreviewContainer.style.display = 'none';
+            imagePreview.src = '';
+            checkSendReady();
+        });
+
+        // 添加消息到对话窗
+        function appendMessage(content, type, imageUrl = null) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${type}`;
+            
+            // 因为后端的 Agent 代码已将 Markdown 图片语法处理成 HTML（见代码段），
+            // 对于 bot 输出，为了呈现 <img src='...'> 格式，这里使用 innerHTML。
+            // 真实生产环境需使用 DOMPurify 防范 XSS，此处为本地可信服务直接使用处理。
+            let htmlContent = content.replace(/\n/g, '<br>');
+            
+            // 如果发送作为用户的消息，且附带本地图片预览
+            if (type === 'user-msg' && imageUrl) {
+                htmlContent += `<br><img src="${imageUrl}" alt="user_image">`;
+            }
+            
+            msgDiv.innerHTML = htmlContent;
+            chatWindow.appendChild(msgDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // 创建打字等待动画
+        function showTypingIndicator() {
+            const div = document.createElement('div');
+            div.className = 'message bot-msg typing';
+            div.id = 'typing-indicator';
+            div.innerHTML = `
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>`;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) typing.remove();
+        }
+
+        // 发送逻辑
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text && !selectedFile) return;
+
+            // 1. 将用户消息在UI渲染
+            const localImgUrl = selectedFile ? URL.createObjectURL(selectedFile) : null;
+            appendMessage(text, 'user-msg', localImgUrl);
+            
+            // 2. 清理输入框
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            const fileToSend = selectedFile; // 缓存一下
+            
+            // 移除本地预览
+            selectedFile = null;
+            fileInput.value = '';
+            imagePreviewContainer.style.display = 'none';
+            checkSendReady();
+
+            showTypingIndicator();
+
+            // 3. 构建 FormData 上传，适配后端 /chat 接口
+            const formData = new FormData();
+            formData.append('command', text);
+            if (fileToSend) {
+                // name 需要与后端函数参数对应 (image_file: UploadFile = File(None))
+                formData.append('image_file', fileToSend); 
+            }
+
+            try {
+                // 请求后端 Agent
+                const response = await fetch(`${API_BASE_URL}/chat`, {
+                    method: 'POST',
+                    body: formData,
+                    // fetch 使用 FormData 时切勿手动设置 Content-Type，
+                    // 浏览器会自动设置并加上 boundaries 值。
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                removeTypingIndicator();
+
+                // 4. 解析 Agent 返回结果并显示
+                // 根据 python 代码返回格式: body 为 JSONResponse(content=result)
+                // result 为字典：{"status": "success", "message": reply, "preview_url": "..."(可选)}
+                let replyContent = result.message || "请求成功，但未返回内容。";
+                
+                // 如果后端返回的字典独立带了预览链接，组装到 message 中
+                if(result.preview_url && !replyContent.includes("<img")) {
+                     replyContent += `<br><br>✅ 生成预览：<br><img src="${result.preview_url}" width="500">`;
+                }
+
+                appendMessage(replyContent, 'bot-msg');
+
+            } catch (error) {
+                console.error("请求错误：", error);
+                removeTypingIndicator();
+                appendMessage("请求失败，请检查后端服务是否正在运行以及跨域设置(CORS)。", 'bot-msg');
+            }
+        }
+
+        // 回车发送支持（Shift+Enter 换行）
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!sendBtn.classList.contains('disabled')) {
+                    sendMessage();
+                }
+            }
+        });
+
+        sendBtn.addEventListener('click', () => {
+            if (!sendBtn.classList.contains('disabled')) {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
