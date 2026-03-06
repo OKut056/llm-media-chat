@@ -3,6 +3,8 @@
 
 只推荐有编程基础和对web有了解的人用。或者至少会问ai的。
 
+在python中运行setup_env.py即可一键配置环境，下载此程序需要的依赖包。（requirements.txt列出了所需的依赖包）
+
 
 start.bat 是windos一键启动服务的程序
 
