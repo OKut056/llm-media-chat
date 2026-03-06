@@ -1,6 +1,8 @@
 # llm-media-chat
 连接本地模型与云端示例（本地也可以）comfyui的agnet实现，可以在本地网页聊天生图等
 
+只推荐有编程基础和对web有了解的人用。或者至少会问ai的。
+
 
 start.bat 是windos一键启动服务的程序
 
