@@ -281,22 +281,29 @@
                 });
                 const result = await response.json();
 
-                // === 无论是否切换，都存入 sendingChatId 对应的缓存 ===
-                saveToLocal({ 
-                    content: result.response || result.message || "生成失败", 
-                    type: 'bot-msg',
-                    msgId: Date.now().toString() + 'b'
-                }, sendingChatId); // 👈 传入锁定的 ID
-
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                // === ✅ 关键：只在用户仍停留在原对话时才更新 UI ===
+                let replyContent = result.message || "请求成功，但未返回内容。";
+                    
+                // 如果后端返回的字典独立带了预览链接，组装到 message 中
+                if(result.preview_url && !replyContent.includes("<img")) {
+                     replyContent += `<br><br>✅ 生成预览：<br><img src="${result.preview_url}" width="500">`;
+                }
+                
+                // === 无论是否切换，都存入 sendingChatId 对应的缓存 ===
+                saveToLocal({ 
+                    content: replyContent || "生成失败", 
+                    type: 'bot-msg',
+                    msgId: Date.now().toString() + 'b'
+                }, sendingChatId); // 传入锁定的 ID
+
+                // === 只在用户仍停留在原对话时才更新 UI ===
                 if (currentChatId === sendingChatId) {
                     removeTypingIndicator();
                     appendMessage(
-                        result.response || result.message || "生成失败",
+                        replyContent || "生成失败",
                         'bot-msg',
                         null,
                         true,
@@ -305,11 +312,8 @@
                 } else {
                     console.log(`[INFO] 回复已存入对话 ${sendingChatId}，用户已切换至 ${currentChatId}，不刷新界面`);
                 }
-                    
-                // 如果后端返回的字典独立带了预览链接，组装到 message 中
-                if(result.preview_url && !replyContent.includes("<img")) {
-                     replyContent += `<br><br>✅ 生成预览：<br><img src="${result.preview_url}" width="500">`;
-                }
+
+                //appendMessage(replyContent, 'bot-msg');
 
             } catch (error) {
                 console.error("请求错误：", error);

@@ -359,7 +359,7 @@ def agent_handle(command: str, image_file: Optional[UploadFile] = None) -> dict:
     
     # 3. 文生图/图生图指令
     try:
-        # ===== 修改开始：根据指令类型加载不同的工作流并处理专属参数 =====
+        # ===== 根据指令类型加载不同的工作流并处理专属参数 =====
         if parsed["type"] == "text2img":
             # 加载Z-Image工作流
             workflow = load_workflow("z_image")
@@ -400,16 +400,16 @@ def agent_handle(command: str, image_file: Optional[UploadFile] = None) -> dict:
         # 运行ComfyUI工作流
         img_path = run_comfyui_workflow(workflow, image_filename)
 
-        # === 读取本地原图直接转码 ===
-        base64_img_data = ""
-        if img_path and os.path.exists(img_path):
-            with open(img_path, "rb") as f:
-                # 把图片转换成Base64数据形式
-                encoded_string = base64.b64encode(f.read()).decode("utf-8")
-                # 拼接成标准的 Data URI 格式供网页渲染
-                base64_img_data = f"data:image/png;base64,{encoded_string}"
-        else:
-            print(f"[错误] 找不到生成的图片路径: {img_path}")
+        # # === 读取本地原图直接转码 ===!!!!!!!!!!!本地运行comfyui时使用!!!!!!!!!!
+        # base64_img_data = ""
+        # if img_path and os.path.exists(img_path):
+        #     with open(img_path, "rb") as f:
+        #         # 把图片转换成Base64数据形式
+        #         encoded_string = base64.b64encode(f.read()).decode("utf-8")
+        #         # 拼接成标准的 Data URI 格式供网页渲染
+        #         base64_img_data = f"data:image/png;base64,{encoded_string}"
+        # else:
+        #     print(f"[错误] 找不到生成的图片路径: {img_path}")
         
         # 正确解析图片URL（保留之前的路径修复逻辑）
         img_dir = os.path.dirname(img_path).replace(Config.COMFYUI_OUTPUT_DIR, "").strip(os.sep)
@@ -419,7 +419,7 @@ def agent_handle(command: str, image_file: Optional[UploadFile] = None) -> dict:
         
         # 你的云端 Jupyter Lab 前缀地址
         CLOUD_FILES_URL = f"{JUPYTER_URL}jupyter/files/ComfyUI/output"
-        # ⚠️ 将你抓到的完整 _xsrf 值写在这里（若之后失效不显示图片了，替换这里的字符串即可）
+        # 将你抓到的完整 _xsrf 值写在这里（若之后失效不显示图片了，替换这里的字符串即可）
         XSRF_TOKEN = "*****"
 
         # 动态拼接最终提取链接
@@ -439,7 +439,7 @@ def agent_handle(command: str, image_file: Optional[UploadFile] = None) -> dict:
         # 返回结果（种子信息提示）
         seed_tips = f"种子：{final_seed}（模式：{parsed['seed_mode']}）"
 
-        # === 新增代码：如果当前是文生图模式，在种子信息后加上具体的模型名称 ===
+        # === 如果当前是文生图模式，在种子信息后加上具体的模型名称 ===
         if parsed.get("type") == "text2img":
             base_id = parsed.get("base_model_id", 1)
             turbo_id = parsed.get("turbo_model_id", 1)
