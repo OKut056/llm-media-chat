@@ -6,7 +6,7 @@
 在python中运行setup_env.py即可一键配置环境，下载此程序需要的依赖包。（requirements.txt列出了所需的依赖包）
 
 
-start.bat 是windos一键启动服务的程序
+start.bat 是windows一键启动服务的程序
 
 start.sh 是Linux/Mac的一键启动服务的程序
 
