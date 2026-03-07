@@ -33,7 +33,6 @@ class Config:
     COMFYUI_HISTORY_URL = f"{COMFYUI_API_URL}/history"
     
     # 工作流文件路径（替换为你的本地工作流JSON路径）
-    # 我在新版本中将工作流放在了同目录下的专属文件夹中
     WORKFLOW_PATHS = {
         "z_image": r".\workflows\Z-Image_双重采样工作流.json",               # Z-Image双重采样工作流
         "qwen_edit": r".\workflows\Qwen-Imag-Eedit-2511图像编辑.json"       # Qwen图像编辑工作流

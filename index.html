@@ -4,332 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI Agent Chat</title>
-    <style>
-        :root {
-            --bg-color: #ffffff;
-            --sidebar-bg: #f0f4f9;
-            --chat-bg: #ffffff;
-            --user-msg-bg: #e3e3e3;
-            --bot-msg-bg: #f8fcfd;
-            --primary-color: #1a73e8;
-            --text-color: #1f1f1f;
-            --border-color: #e0e0e0;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            display: flex;
-            height: 100vh;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            overflow: hidden;
-        }
-
-        /* 侧边栏样式 */
-        #sidebar {
-            width: 280px; /* 初始宽度 */
-            background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            transition: width 0.3s ease, all 0.3s ease; /* 添加平滑过渡效果 */
-            overflow-x: hidden; /* 隐藏收起时的溢出内容 */
-            white-space: nowrap; /* 强制文字不换行 */
-        }
-
-        #sidebar.collapsed {
-            width: 0;
-            padding: 0;
-            margin: 0;
-            border: none;
-            opacity: 0;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .sidebar-content {
-            padding: 20px;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .control-group {
-            margin-bottom: 15px;
-        }
-
-        .control-group label {
-            display: flex;
-            align-items: center;
-            font-size: 0.95rem;
-            cursor: pointer;
-        }
-
-        .control-group input[type="checkbox"] {
-            margin-right: 10px;
-            width: 16px;
-            height: 16px;
-        }
-
-        /* 主对话区域样式 */
-        #main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            background-color: var(--chat-bg);
-        }
-
-        .header-bar {
-            height: 60px;
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .menu-btn {
-            display: block !important; /* 无论屏幕大小都显示侧边栏开关按钮 */
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--text-color);
-            margin-right: 15px;
-            z-index: 1001;
-        }
-
-        #chat-window {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            scroll-behavior: smooth;
-        }
-
-        .message {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            line-height: 1.5;
-            word-wrap: break-word;
-        }
-
-        .message img {
-            max-width: 100%;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-
-        .user-msg {
-            align-self: flex-end;
-            background-color: var(--user-msg-bg);
-            border-bottom-right-radius: 4px;
-        }
-
-        .bot-msg {
-            align-self: flex-start;
-            background-color: var(--bot-msg-bg);
-            border: 1px solid var(--border-color);
-            border-bottom-left-radius: 4px;
-        }
-
-        /* 输入区样式 */
-        #input-container {
-            padding: 20px;
-            background-color: var(--chat-bg);
-            border-top: 1px solid var(--border-color);
-            position: relative;
-        }
-
-        .input-box {
-            display: flex;
-            align-items: flex-end;
-            background-color: var(--sidebar-bg);
-            border-radius: 24px;
-            padding: 10px 15px;
-            position: relative;
-        }
-
-        #image-preview-container {
-            display: none;
-            position: absolute;
-            bottom: 100%;
-            left: 20px;
-            margin-bottom: 10px;
-            background: var(--bg-color);
-            padding: 5px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        #image-preview-container img {
-            height: 80px;
-            border-radius: 4px;
-        }
-
-        #remove-img-btn {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff4d4f;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            font-size: 12px;
-            line-height: 20px;
-            text-align: center;
-        }
-
-        textarea {
-            flex: 1;
-            border: none;
-            background: transparent;
-            resize: none;
-            outline: none;
-            padding: 8px;
-            font-size: 1rem;
-            max-height: 150px;
-            min-height: 24px;
-            overflow-y: auto;
-        }
-
-        .action-btn {
-            background: none;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--text-color);
-            transition: background 0.2s;
-        }
-
-        .action-btn:hover {
-            background-color: rgba(0,0,0,0.05);
-        }
-
-        .action-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-
-        .send-btn {
-            color: var(--primary-color);
-        }
-
-        .send-btn.disabled {
-            color: #ccc;
-            cursor: not-allowed;
-        }
-
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-            #sidebar {
-                position: fixed;
-                left: -260px;
-                top: 0;
-                bottom: 0;
-                z-index: 1000;
-                width: 260px;
-                opacity: 1;
-                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            }
-            #sidebar.open {
-                left: 0;
-            }
-             /* 手机端时取消 PC 端的 collapsed 缩减宽度逻辑，防止冲突 */
-            #sidebar.collapsed {
-                width: 260px; 
-                left: -260px;
-                opacity: 1;
-            }
-        }
-
-        /* 加载动画 */
-        .typing-indicator {
-            display: flex;
-            gap: 4px;
-            padding: 5px;
-        }
-        .typing-indicator span {
-            width: 6px;
-            height: 6px;
-            background: #90949c;
-            border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out both;
-        }
-        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-
-        /* 新建对话按钮样式 */
-        #new-chat-btn {
-            width: 100%;
-            padding: 10px;
-            background-color: #ffffff;
-            border: 1px solid #d1d1d1;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        #new-chat-btn:hover {
-            background-color: #f0f0f0;
-            border-color: #c1c1c1;
-        }
-
-        /* 历史对话条目基础样式：白色背景 */
-        .history-item {
-            padding: 12px 15px;
-            margin: 8px 0;
-            background-color: #ffffff; /* 默认白色背景 */
-            color: var(--text-color);
-            border: 1px solid var(--border-color); /* 添加边框以便在白色背景上更清晰 */
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            transition: background-color 0.2s; /* 增加过渡动画 */
-        }
-
-        /* 鼠标悬停时：变为浅灰色 */
-        .history-item:hover {
-            background-color: #f0f0f0; /* 悬停浅灰色 */
-        }
-
-        /* 当前使用的对话（激活状态）：变为浅灰色 */
-        .history-item.active {
-            background-color: #e8e8e8; /* 选中浅灰色 */
-            border-color: #d0d0d0;
-            font-weight: 500;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
 <body>
 
@@ -387,12 +62,12 @@
     <script>
         // 配置后端接口地址
         // 优化代码：不再把内网 IP 完全写死，改为动态获取当前宿主机域名以防止环境切换后连接失效
-        const DEFAULT_IP = "192.168.29.206";
+        const DEFAULT_IP = "192.168.*.*";
         const currentHost = window.location.hostname || DEFAULT_IP;
         // 配置后端接口地址
         const API_BASE_URL = `http://${currentHost}:8000`;
 
-        // --- 新增：历史记录配置 ---
+        // --- 历史记录配置 ---
         const HISTORY_KEY = 'chat_agent_history';
         const MAX_HISTORY = 50; // 最多存储50条
 
@@ -474,7 +149,13 @@
         });
 
         // 添加消息到对话窗
-        function appendMessage(content, type, imageUrl = null, isHistory = false) {
+        function appendMessage(content, type, imageUrl = null, isHistory = false, msgId = null) {
+
+            // 1. 如果是新发送的消息，生成一个随机唯一标识
+            if (!msgId) {
+                msgId = Date.now().toString() + Math.random().toString(36).substring(2, 7);
+            }
+
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${type}`;
             
@@ -497,12 +178,45 @@
                 msgDiv.appendChild(img);
             }
 
+            // 2. 创建悬浮及删除按键逻辑
+            const delBtn = document.createElement('div');
+            delBtn.className = 'msg-delete-btn';
+            delBtn.innerText = '删除';
+            
+            let isConfirming = false; // 二次确认状态控制
+
             chatWindow.appendChild(msgDiv);
             chatWindow.scrollTop = chatWindow.scrollHeight;
 
-            // --- 新增：如果不是历史回显，则存入本地 ---
+            delBtn.onclick = (e) => {
+                e.stopPropagation(); // 阻止其他事件
+                
+                if (!isConfirming) {
+                    // == 第一次点击：进入红字确认状态 ==
+                    isConfirming = true;
+                    delBtn.innerText = '确认删除？';
+                    delBtn.classList.add('confirm-state');
+
+                    // 交互优化：如果鼠标移出了这条消息，取消确认状态，变回普通"删除"
+                    msgDiv.onmouseleave = () => {
+                        isConfirming = false;
+                        delBtn.innerText = '删除';
+                        delBtn.classList.remove('confirm-state');
+                        msgDiv.onmouseleave = null; // 清除此事件监听
+                    };
+                } else {
+                    // == 第二次点击：确属删除操作 ==
+                    msgDiv.remove(); // 1. 先从右边画面删除
+                    deleteMsgFromLocal(currentChatId, msgId, content); // 2. 再执行缓存清除
+                }
+            };
+
+            msgDiv.appendChild(delBtn);
+
+            // --- 如果不是历史回显，则存入本地 ---
+            // 3. 将消息及唯一 msgId 保存至 localStorage (只有非历史发送时才执行)
             if (!isHistory) {
-                saveToLocal({ content, type, imageUrl, timestamp: Date.now() });
+                saveToLocal({ msgId, content, type, imageUrl, timestamp: Date.now() });
             }
         }
 
@@ -528,6 +242,9 @@
         async function sendMessage() {
             const text = messageInput.value.trim();
             if (!text && !selectedFile) return;
+
+            // === 锁定发送时刻的对话 ID ===
+            const sendingChatId = currentChatId;
 
             // 1. 将用户消息在UI渲染
             const localImgUrl = selectedFile ? URL.createObjectURL(selectedFile) : null;
@@ -562,39 +279,43 @@
                     // fetch 使用 FormData 时切勿手动设置 Content-Type，
                     // 浏览器会自动设置并加上 boundaries 值。
                 });
+                const result = await response.json();
+
+                // === 无论是否切换，都存入 sendingChatId 对应的缓存 ===
+                saveToLocal({ 
+                    content: result.response || result.message || "生成失败", 
+                    type: 'bot-msg',
+                    msgId: Date.now().toString() + 'b'
+                }, sendingChatId); // 👈 传入锁定的 ID
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const result = await response.json();
-                removeTypingIndicator();
-
-                // 4. 解析 Agent 返回结果并显示
-                // 根据 python 代码返回格式: body 为 JSONResponse(content=result)
-                // result 为字典：{"status": "success", "message": reply, "preview_url": "..."(可选)}
-                let replyContent = result.message || "请求成功，但未返回内容。";
-                
+                // === ✅ 关键：只在用户仍停留在原对话时才更新 UI ===
+                if (currentChatId === sendingChatId) {
+                    removeTypingIndicator();
+                    appendMessage(
+                        result.response || result.message || "生成失败",
+                        'bot-msg',
+                        null,
+                        true,
+                        Date.now().toString() + 'b'
+                    );
+                } else {
+                    console.log(`[INFO] 回复已存入对话 ${sendingChatId}，用户已切换至 ${currentChatId}，不刷新界面`);
+                }
+                    
                 // 如果后端返回的字典独立带了预览链接，组装到 message 中
                 if(result.preview_url && !replyContent.includes("<img")) {
                      replyContent += `<br><br>✅ 生成预览：<br><img src="${result.preview_url}" width="500">`;
                 }
-
-                appendMessage(replyContent, 'bot-msg');
 
             } catch (error) {
                 console.error("请求错误：", error);
                 removeTypingIndicator();
                 appendMessage("请求失败，请检查后端服务是否正在运行以及跨域设置(CORS)。", 'bot-msg');
             }
-        }
-
-        // --- 新增：本地存储持久化函数 ---
-        function saveToLocal(msgObj) {
-            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-            history.push(msgObj);
-            if (history.length > MAX_HISTORY) history.shift(); // 超过长度删除旧记录
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
         }
 
         function loadHistory() {
@@ -607,22 +328,65 @@
 
         // 1. 初始化/加载历史列表显示在侧边栏
         function renderHistoryList() {
+            const historyList = document.getElementById('history-list');
             const chats = JSON.parse(localStorage.getItem(CHATS_KEY) || '{}');
             historyList.innerHTML = '';
-            // 按时间倒序排列显示
+
             Object.keys(chats).sort().reverse().forEach(id => {
                 const item = document.createElement('div');
                 item.className = 'history-item';
                 if (id === currentChatId) item.classList.add('active');
 
-                // 获取该对话的第一条文字作为预览
+                // 文字内容部分
                 const messages = chats[id];
                 const previewText = messages.length > 0 ? messages[0].content.substring(0, 15) : "新对话";
                 
-                item.innerText = previewText;
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'history-title';
+                titleSpan.innerText = previewText;
+                
+                // 删除按钮部分
+                const delBtn = document.createElement('span');
+                delBtn.className = 'delete-btn';
+                delBtn.innerHTML = '&times;'; // 显示一个 X 符号
+                delBtn.title = "删除对话";
+                
+                // 阻止冒泡，点击删除时不会触发渲染对话
+                delBtn.onclick = (e) => {
+                    e.stopPropagation(); 
+                    deleteChat(id);
+                };
+
                 item.onclick = () => switchChat(id);
+                
+                item.appendChild(titleSpan);
+                item.appendChild(delBtn);
                 historyList.appendChild(item);
             });
+        }
+
+        // 2. 删除对话逻辑
+        function deleteChat(id) {
+            // 弹出确认弹窗
+            if (!confirm("确定要删除这段对话记录吗？此操作不可撤销。")) {
+                return;
+            }
+
+            let chats = JSON.parse(localStorage.getItem(CHATS_KEY) || '{}');
+            
+            // 从对象中删除对应 ID
+            if (chats[id]) {
+                delete chats[id];
+                localStorage.setItem(CHATS_KEY, JSON.stringify(chats));
+            }
+
+            // 如果删除的是当前正在查看的对话，则清空窗口并开启新对话
+            if (id === currentChatId) {
+                currentChatId = Date.now().toString();
+                document.getElementById('chat-window').innerHTML = '';
+            }
+
+            renderHistoryList(); // 重新刷新左侧列表
         }
 
         // 2. 切换对话
@@ -636,25 +400,55 @@
             
             // 重新渲染该记录下的所有消息
             messages.forEach(msg => {
-                appendMessage(msg.content, msg.type, msg.imageUrl, true);
+                appendMessage(msg.content, msg.type, msg.imageUrl, true, msg.msgId);
             });
 
             renderHistoryList();
         }
 
+        // --- 本地存储持久化函数 ---
         // 3. 修改原有的保存函数
-        function saveToLocal(msgObj) {
+        function saveToLocal(msgObj, targetId = null) {
+            // 如果没传 targetId，默认使用当前的 currentChatId
+            const chatId = targetId || currentChatId;
+
             let chats = JSON.parse(localStorage.getItem(CHATS_KEY) || '{}');
-            if (!chats[currentChatId]) {
-                chats[currentChatId] = [];
+            if (!chats[chatId]) {
+                chats[chatId] = [];
             }
             
-            chats[currentChatId].push(msgObj);
+            chats[chatId].push(msgObj);
             localStorage.setItem(CHATS_KEY, JSON.stringify(chats));
             
             // 如果是首条消息，刷新列表以更新标题
-            if (chats[currentChatId].length === 1) {
+            if (chats[chatId].length === 1) {
                 renderHistoryList();
+            }
+        }
+
+        // 从本地缓存删除单条聊天记录
+        function deleteMsgFromLocal(chatId, msgId, contentToFallback) {
+            let chats = JSON.parse(localStorage.getItem(CHATS_KEY) || '{}');
+            if (chats[chatId]) {
+                // 根据唯一的 msgId 查找并删除（容错处理：若为旧记录无msgId，则匹配内容）
+                const index = chats[chatId].findIndex(msg => 
+                    (msg.msgId && msg.msgId === msgId) || (!msg.msgId && msg.content === contentToFallback)
+                );
+                
+                if (index !== -1) {
+                    chats[chatId].splice(index, 1);
+                    
+                    // 如果某对话的所有消息都被删空了，将其彻底移除
+                    if (chats[chatId].length === 0) {
+                        delete chats[chatId];
+                        if (currentChatId === chatId) {
+                            currentChatId = Date.now().toString(); // 当前置空后生成新ID
+                        }
+                    }
+                    
+                    localStorage.setItem(CHATS_KEY, JSON.stringify(chats));
+                    renderHistoryList(); // 同步刷新侧边栏（如果它刚好是最新一条被删了）
+                }
             }
         }
 
@@ -695,7 +489,7 @@
             }
         });
 
-        // --- 新增：页面加载时自动恢复记录 ---
+        // --- 页面加载时自动恢复记录 ---
         window.addEventListener('DOMContentLoaded', () => {
             loadHistory();
         });
